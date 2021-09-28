@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Visualisierung des Doppler-Effekts</title>
+        <meta charset="UTF-8">
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+            }
+            canvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <input id="speed" type="range" value="0" min="0", max="2", step="0.5" autocomplete="off">
+        <canvas id="surface"></canvas>
+        <script>
+            ambulance = document.createElement('img')
+            ambulance.src = 'ambulance.png'
+            document.body.appendChild(ambulance)
+
+            ambulance.style.width = '250px'
+            ambulance.style.height = '250px'
+            ambulance.style.position = 'absolute'
+            ambulance.style.top = '50%'
+            ambulance.style.marginTop = '-125px'
+
+            const ambulanceSpeed = document.getElementById("speed");
+            const waveSpeed = 1.5;
+            const interval = 750;
+            const lineWidth = 1;
+
+            var ambulancePosX = window.innerWidth / 2 - 125;
+            var ambulanceDirX = 1
+
+            const canvas = document.getElementById("surface");
+            const ctx = canvas.getContext("2d");
+            canvas.style.zIndex = -1
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            setInterval(() => {waves.push({x: ambulancePosX + ambulance.offsetWidth / 2, y: canvas.height / 2, r: 1})}, interval)
+
+            var waves = [];
+            const ref = 1 / Math.min(canvas.width, canvas.height)
+            function loop()
+            {
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < waves.length; i++)
+                {
+                    let wave = waves[i];
+                    ctx.beginPath();
+                    ctx.arc(wave.x, wave.y, wave.r, 0, Math.PI * 2);
+                    let val = wave.r * ref
+                    if (val > 1)
+                    {
+                        waves.splice(i, 1);
+                        i--;
+                        continue;
+                    }
+                    ctx.strokeStyle = `hsl(0,0%,${val * 100}%)`
+                    ctx.lineWidth = lineWidth;
+                    ctx.stroke();
+                    wave.r += waveSpeed;
+                }
+
+                if (ambulancePosX < 0)
+                {
+                    ambulanceDirX = 1
+                }
+                if (ambulancePosX >= window.innerWidth - ambulance.width)
+                {
+                    ambulanceDirX = -1
+                }
+                ambulance.style.transform = `scaleX(${ambulanceDirX})`
+                ambulancePosX += ambulanceDirX * ambulanceSpeed.value;
+                ambulance.style.left = ambulancePosX + 'px'
+                requestAnimationFrame(loop);
+            }
+            loop()
+        </script>
+    </body>
+</html>
